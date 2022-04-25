@@ -1,4 +1,4 @@
-package com.firebase2.proyecfire2
+package com.example.contador
 
 import io.flutter.embedding.android.FlutterActivity
 
