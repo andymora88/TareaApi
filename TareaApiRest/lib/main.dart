@@ -1,56 +1,143 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:proyecfire2/src/services/service_User.dart';
-import 'src/pages/home.dart';
-import 'src/pages/actividades.dart';
-import 'package:provider/provider.dart';
+import 'package:proyecfire2/src/services/service_Api.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+void main() {
   runApp(const MyApp());
 }
+
+TextEditingController _ControllerNombre = TextEditingController();
+TextEditingController _ControllerContenido = TextEditingController();
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    @override
-    void initState() {
-      final _serviceUser = Provider.of<serviceUser>(context);
-    }
-
-    @override
-    void dispose() {
-      final _serviceUser = Provider.of<serviceUser>(context);
-    }
-
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => serviceUser()),
-      ],
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
-          primarySwatch: Colors.blue,
-        ),
-        home: HomePage(
-          title: '',
-        ),
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: const MyHomePage(title: ''),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ControllerNombre.dispose();
+    _ControllerContenido.dispose();
+  }
+
+  @override
+  void initState() {
+    _ControllerNombre.text = "";
+    _ControllerContenido.text = "";
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  void addNote() {
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ServiceApi serviceApi = ServiceApi();
+    serviceApi.listaNotas();
+    return Scaffold(
+      body: FutureBuilder(
+        future: serviceApi.listaNotas(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (BuildContext context, int index) => Column(
+                      children: <Widget>[
+                        Dismissible(
+                          key: UniqueKey(),
+                          background: Container(
+                            color: Colors.red,
+                          ),
+                          onDismissed: (direction) async {
+                            bool dato = await serviceApi
+                                .deleteNote(snapshot.data[index].id);
+                            if (dato) {
+                              snapshot.data.removeAt(index);
+                              setState(() {});
+                            }
+                          },
+                          child: ListTile(
+                            title: Text(snapshot.data[index].nombre),
+                            subtitle: Text(snapshot.data[index].contenido),
+                          ),
+                        ),
+                        Divider(),
+                      ],
+                    ));
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            //  showModalBottomSheet
+            showModalBottomSheet(
+                context: context,
+                builder: (BuildContext context) {
+                  return SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    child: Column(
+                      children: <Widget>[
+                        TextField(
+                          controller: _ControllerNombre,
+                          decoration: const InputDecoration(
+                            labelText: "Nombre",
+                          ),
+                        ),
+                        TextField(
+                          controller: _ControllerContenido,
+                          decoration: const InputDecoration(
+                            labelText: "Contenido",
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            bool dato = await serviceApi.addNote(
+                                _ControllerNombre.text,
+                                _ControllerContenido.text);
+                            if (dato) {
+                              setState(() {});
+                            }
+
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("Agregar"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {});
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("Cancelar"),
+                        ),
+                      ],
+                    ),
+                  );
+                });
+          },
+          child: Icon(Icons.add)),
     );
   }
 }
