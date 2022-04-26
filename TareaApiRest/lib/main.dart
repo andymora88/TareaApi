@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:proyecfire2/src/services/service_Api.dart';
 
@@ -18,7 +20,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: ''),
+      home: const MyHomePage(title: 'Lista de notas'),
+      debugShowCheckedModeBanner: false,
     );
   }
 
@@ -54,6 +57,9 @@ class _MyHomePageState extends State<MyHomePage> {
     ServiceApi serviceApi = ServiceApi();
     serviceApi.listaNotas();
     return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
       body: FutureBuilder(
         future: serviceApi.listaNotas(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -72,7 +78,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                 .deleteNote(snapshot.data[index].id);
                             if (dato) {
                               snapshot.data.removeAt(index);
+
                               setState(() {});
+                              //snap bar
+                              Scaffold.of(context).showSnackBar(const SnackBar(
+                                content: Text("Nota eliminada"),
+                                duration: Duration(seconds: 1),
+                              ));
                             }
                           },
                           child: ListTile(
@@ -92,7 +104,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: () {
-            //  showModalBottomSheet
             showModalBottomSheet(
                 context: context,
                 builder: (BuildContext context) {
