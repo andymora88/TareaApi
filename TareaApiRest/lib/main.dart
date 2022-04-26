@@ -120,7 +120,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             if (dato) {
                               setState(() {});
                             }
-
+                            _ControllerNombre.text = "";
+                            _ControllerContenido.text = "";
                             Navigator.of(context).pop();
                           },
                           child: const Text("Agregar"),
