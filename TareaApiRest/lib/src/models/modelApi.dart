@@ -9,8 +9,6 @@ class ModelApi {
 
   ModelApi({required this.id, required this.nombre, required this.contenido});
 
-  final String apiUrl = "https://faddish-smoke.000webhostapp.com/api/";
-
   factory ModelApi.fromMap(Map<String, dynamic> json) => ModelApi(
       id: json["Id"], nombre: json["nombre"], contenido: json["contenido"]);
 }
